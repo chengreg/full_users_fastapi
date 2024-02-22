@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "full-users-fastapi"
+version = "0.1.0"
+description = ""
+authors = ["Chen GangQiang <89298747+chengreg@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = {extras = ["all"], version = "^0.109.2"}
+sqlmodel = "^0.0.16"
+alembic = "^1.13.1"
+pymysql = "^1.1.0"
+python-jose = "^3.3.0"
+passlib = "^1.7.4"
+bcrypt = "^4.1.2"
+pyjwt = "^2.8.0"
+aiomysql = "^0.2.0"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
