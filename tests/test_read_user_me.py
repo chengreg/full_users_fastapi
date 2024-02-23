@@ -14,6 +14,7 @@ BASE_URL = "http://127.0.0.1:8844"
 TOKEN_URL = f"{BASE_URL}/v1/auth/token"
 USERS_ME_URL = f"{BASE_URL}/v1/user/me"
 
+
 def get_access_token(username: str, password: str) -> str:
     response = requests.post(TOKEN_URL, data={"username": username, "password": password})
     assert response.status_code == 200

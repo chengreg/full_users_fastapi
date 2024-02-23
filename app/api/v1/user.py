@@ -108,7 +108,7 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
 
-@user_router.put("/user/profile", summary="更新用户信息")
+@user_router.patch("/profile", summary="更新用户信息")
 async def update_user_profile_route(
         update_model: UpdateUserProfileModel = Body(...),
         db: Session = Depends(get_db),
@@ -137,18 +137,18 @@ async def update_user_profile_route(
     return {"message": "User and profile updated successfully."}
 
 
-@user_router.get("/user/status", response_model=UsersStatusEnum)
+@user_router.get("/status", response_model=UsersStatusEnum)
 def read_user_status(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     return current_user.status
 
 
-@user_router.patch("/user/status", response_model=User)
+@user_router.patch("/status", response_model=User)
 def change_user_status(status: UsersStatusEnum, current_user: User = Depends(get_current_user),
                        db: Session = Depends(get_db)):
     return update_user_status(db, current_user.id, status)
 
 
-@user_router.post("/user/deactivate", response_model=User)
+@user_router.post("/deactivate", response_model=User)
 async def deactivate_account(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not current_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
