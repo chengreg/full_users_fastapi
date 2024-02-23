@@ -5,14 +5,14 @@
 @Date    ：2024/2/23 00:06 
 @Desc    ：
 """
-from datetime import datetime
-from pydantic import BaseModel
-from sqlalchemy import Column, DateTime
-from sqlmodel import Field
+
+from datetime import datetime, timezone
+from typing import Optional
+
+from sqlmodel import SQLModel, Field
 
 
-class Timestamps(BaseModel):
-    created_at: datetime = Field(sa_column=Column(DateTime, default=datetime.now), description="创建时间")
-    modified_at: datetime = Field(
-        sa_column=Column(DateTime, default=datetime.now, onupdate=datetime.now, nullable=False), description="修改时间")
+class Timestamps(SQLModel):
+    created_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc), description="创建时间")
+    updated_at: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc), sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)}, description="更新时间")
 

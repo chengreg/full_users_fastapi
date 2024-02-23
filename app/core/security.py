@@ -7,10 +7,6 @@
 """
 
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
-import jwt
-from typing import Optional
-from .config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,12 +17,12 @@ def get_password_hash(password: str):
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return encoded_jwt
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    验证明文密码与哈希密码是否匹配。
+
+    :param plain_password: 用户输入的明文密码。
+    :param hashed_password: 数据库中存储的哈希密码。
+    :return: 布尔值，如果密码匹配返回True，否则返回False。
+    """
+    return pwd_context.verify(plain_password, hashed_password)

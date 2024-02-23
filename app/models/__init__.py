@@ -5,3 +5,6 @@
 @Date    ：2024/2/22 22:55 
 @Desc    ：
 """
+
+from .user import User, UserProfile
+from .secret_key import SecretKey

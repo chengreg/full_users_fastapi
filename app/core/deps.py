@@ -15,6 +15,7 @@ from sqlmodel import Session
 from .mysql_db import get_db
 from .config import settings
 from ..crud.user import get_user_by_username
+from app.core.redis_db import get_redis_pool
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
 
@@ -25,6 +26,12 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    # 检查Redis中是否存在令牌
+    redis = await get_redis_pool()
+    token_exists = await redis.exists(token)
+    if not token_exists:
+        raise credentials_exception
+
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         username: str = payload.get("sub")

@@ -26,10 +26,14 @@ class Settings(BaseSettings):
 
     # 数据库配置
     MYSQL_URL: str
+    REDIS_URL: str
+
+    APP_ENV: str = "development"
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        # extra = "ignore"  # 或 "allow" 以允许额外的字段
 
 
 settings = Settings()
