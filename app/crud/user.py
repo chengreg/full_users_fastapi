@@ -8,10 +8,11 @@
 # crud/crud_user.py
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from app.models.user import User
+from app.models.user import User, UserProfile
 from app.schemas.user import UserCreate
 from app.core.security import get_password_hash
 from uuid import uuid4
+from fastapi import HTTPException
 
 
 # 创建用户
@@ -49,3 +50,56 @@ def check_existence(db: Session, username: str = None, email: str = None, phone_
 # 获取用户信息
 def get_user_by_username(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
+
+
+# 检查用户是否存在
+def check_user_existence(db: Session, username: str = None, email: str = None, phone_number: str = None, country_code: str = None) -> list:
+    existing_fields = []
+
+    if username and db.query(db.query(User).filter(User.username == username).exists()).scalar():
+        existing_fields.append("username")
+
+    if email and db.query(db.query(User).filter(User.email == email).exists()).scalar():
+        existing_fields.append("email")
+
+    if phone_number and country_code and db.query(db.query(User).filter(User.phone_number == phone_number, User.country_code == country_code).exists()).scalar():
+        existing_fields.append("phone number and country code")
+
+    return existing_fields
+
+
+def update_user(db: Session, user_id: str, user_update: dict):
+    existing_fields = check_user_existence(
+        db,
+        username=user_update.get("username"),
+        email=user_update.get("email"),
+        phone_number=user_update.get("phone_number"),
+        country_code=user_update.get("country_code")
+    )
+
+    if existing_fields:
+        fields_str = ", ".join(existing_fields)
+        raise HTTPException(status_code=400, detail=f"{fields_str} already exists.")
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    for key, value in user_update.items():
+        setattr(user, key, value)
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def update_user_profile(db: Session, user_id: str, profile_update: dict):
+    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+    if not profile:
+        profile = UserProfile(user_id=user_id)
+        db.add(profile)
+    for key, value in profile_update.items():
+        setattr(profile, key, value)
+    db.commit()
+    db.refresh(profile)
+    return profile

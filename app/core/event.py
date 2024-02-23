@@ -10,6 +10,7 @@ from typing import Callable
 from fastapi import FastAPI
 from .mysql_db import init_db
 from app.models.user import User, UserProfile
+from app.models.secret_key import SecretKey
 
 
 def startup(app: FastAPI) -> Callable:

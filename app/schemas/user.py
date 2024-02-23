@@ -26,3 +26,14 @@ class UserResponse(BaseModel):
     phone_number: Optional[str]
     country_code: Optional[str]
     status: UsersStatusEnum
+
+
+class UpdateUserProfileModel(BaseModel):
+    username: Optional[str] = Field(None, min_length=6, max_length=50)
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = Field(None, min_length=1, max_length=20)
+    country_code: Optional[str] = Field(None, min_length=1, max_length=4)
+    # UserProfile相关字段
+    nickname: Optional[str] = None
+    gender: Optional[str] = None
+    location: Optional[str] = None
