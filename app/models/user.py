@@ -32,6 +32,12 @@ class GenderEnum(str, pyEnum):
     UNDISCLOSED = "U"  # 未公开
 
 
+class SocialAccountStatus(str, pyEnum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    UNBOUND = "unbound"  # 表示社交账号已解绑
+
+
 class User(Timestamps, table=True):
     """ 用户模型 """
     __tablename__ = "users"
@@ -68,3 +74,39 @@ class UserProfile(Timestamps, table=True):
     custom_status: Optional[str] = Field(max_length=255, description="用户定义的状态")
 
 
+class SocialAccount(Timestamps, table=True):
+    """ 社交账号模型 """
+    __tablename__ = "social_accounts"
+
+    id: Optional[int] = Field(default=None, primary_key=True, description="ID")
+    user_id: str = Field(foreign_key="users.id", description="用户ID")
+    platform: str = Field(description="社交平台名称")
+    platform_user_id: str = Field(description="平台上的用户标识符")
+    access_token: Optional[str] = Field(description="访问令牌")
+    status: str = Field(sa_column=Column(String, default=SocialAccountStatus.ACTIVE), description="社交账号状态")
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class SocialUserInfo(Timestamps, table=True):
+    """ 社交平台用户信息模型 """
+    __tablename__ = "social_user_info"
+
+    id: Optional[int] = Field(default=None, primary_key=True, description="ID")
+    social_account_id: str = Field(foreign_key="social_accounts.id", description="社交账号ID")
+    username: Optional[str] = Field(description="平台用户名")
+    avatar_url: Optional[str] = Field(description="用户头像URL")
+    profile_url: Optional[str] = Field(description="社交平台上的用户主页URL")
+    location: Optional[str] = Field(description="位置")
+    bio: Optional[str] = Field(description="个人简介")
+    full_name: Optional[str] = Field(description="全名")
+    email: Optional[str] = Field(description="邮箱")
+    followers_count: Optional[int] = Field(default=None, description="关注者数量")
+    following_count: Optional[int] = Field(default=None, description="关注的用户数量")
+    posts_count: Optional[int] = Field(default=None, description="帖子数量")
+    registration_date: Optional[datetime.date] = Field(default=None, description="注册日期")
+    status: str = Field(sa_column=Column(String, default=SocialAccountStatus.ACTIVE), description="社交账号状态")
+
+    class Config:
+        arbitrary_types_allowed = True

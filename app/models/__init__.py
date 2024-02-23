@@ -6,5 +6,5 @@
 @Desc    ：
 """
 
-from .user import User, UserProfile
+from .user import User, UserProfile, SocialAccount, SocialUserInfo
 from .secret_key import SecretKey
