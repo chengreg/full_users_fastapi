@@ -6,7 +6,6 @@
 @Desc    ：
 """
 
-import secrets
 from pydantic_settings import BaseSettings
 
 
@@ -20,7 +19,7 @@ class Settings(BaseSettings):
     # 项目作者
     PROJECT_AUTHOR: str = "Chen GangQiang"
 
-    SECRET_KEY: str = secrets.token_hex(24)
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
