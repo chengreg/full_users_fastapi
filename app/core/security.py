@@ -25,4 +25,5 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     :param hashed_password: 数据库中存储的哈希密码。
     :return: 布尔值，如果密码匹配返回True，否则返回False。
     """
+
     return pwd_context.verify(plain_password, hashed_password)

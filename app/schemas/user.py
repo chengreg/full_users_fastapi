@@ -6,7 +6,7 @@
 @Desc    ：
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 from typing import Optional
 from ..models.user import UsersStatusEnum, GenderEnum
 import datetime
@@ -51,3 +51,16 @@ class UpdateUserProfileModel(BaseModel):
     birth_date: Optional[datetime.date] = None,
     bio: Optional[str] = Field(None,max_length=255)
     custom_status: Optional[str] = Field(None, max_length=255)
+
+
+class PasswordUpdateRequest(BaseModel):
+    old_password: str = Field(..., description="The current password of the user")
+    new_password: str = Field(..., min_length=8, description="The new password for the user")
+
+    @field_validator('new_password')
+    def password_strength(cls, value: str):
+        # 示例: 确保密码长度至少为6
+        if len(value) < 6:
+            raise ValueError('Password must be at least 6 characters long')
+        # 可以添加更多的密码强度验证逻辑
+        return value

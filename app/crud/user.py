@@ -155,3 +155,12 @@ def update_user_status(db_session: Session, user_id: str, new_status: UsersStatu
     except NoResultFound:
         raise HTTPException(status_code=404, detail="User not found")
 
+
+def update_user_password(db: Session, user_id: str, new_password: str):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        hashed_password = get_password_hash(new_password)
+        user.hashed_password = hashed_password
+        db.commit()
+        return True
+    return False
