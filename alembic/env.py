@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from sqlmodel import SQLModel
 
-from app.models import User, UserProfile, SecretKey
+from app.models.user import *
 
 # 加载环境变量配置
 def load_env_config():
@@ -44,7 +44,7 @@ def run_migrations_offline() -> None:
 def run_migrations_online() -> None:
     """在在线模式下运行迁移"""
     configuration = config.get_section(config.config_ini_section)
-    configuration['sqlalchemy.url'] = os.getenv('MYSQL_URL')  # 使用环境变量中的数据库URL
+    configuration['sqlalchemy.url'] = os.getenv('POSTGRES_URL_SYNC')  # 使用环境变量中的数据库URL
     connectable = engine_from_config(configuration, prefix="sqlalchemy.", poolclass=pool.NullPool)
 
     with connectable.connect() as connection:

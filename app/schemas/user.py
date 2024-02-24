@@ -12,7 +12,7 @@ from ..models.user import UsersStatusEnum, GenderEnum
 import datetime
 
 
-class UserCreate(BaseModel):
+class UserCreateSchema(BaseModel):
     username: Optional[str] = Field(None, min_length=6, max_length=50, description="用户名")
     email: Optional[EmailStr] = Field(None, description="电子邮件")
     phone_number: Optional[str] = Field(None, min_length=1, max_length=20, description="手机号码")
@@ -20,23 +20,34 @@ class UserCreate(BaseModel):
     password: Optional[str] = Field(None, min_length=6, max_length=20, description="密码")
 
 
-class UserResponse(BaseModel):
-    id: str
-    username: Optional[str]
-    email: Optional[EmailStr]
-    phone_number: Optional[str]
-    country_code: Optional[str]
-    status: UsersStatusEnum
-
-class RegisterRequest(BaseModel):
-    username: Optional[str] = Field(None, description="用户名")
-    email: Optional[EmailStr] = Field(None, description="邮箱地址")
-    phone_number: Optional[str] = Field(None, description="手机号码")
-    country_code: Optional[str] = Field(None, description="国际区号")
-    password: str
-
-
-class UpdateUserProfileModel(BaseModel):
+#
+# class UserCreateSchema(BaseModel):
+#     username: Optional[str] = Field(None, min_length=6, max_length=50, description="用户名")
+#     email: Optional[EmailStr] = Field(None, description="电子邮件")
+#     phone_number: Optional[str] = Field(None, min_length=1, max_length=20, description="手机号码")
+#     country_code: Optional[str] = Field(None, min_length=1, max_length=4, description="国际区号")
+#     password: Optional[str] = Field(None, min_length=6, max_length=20, description="密码")
+#
+#
+#
+#
+# class UserResponse(BaseModel):
+#     id: str
+#     username: Optional[str]
+#     email: Optional[EmailStr]
+#     phone_number: Optional[str]
+#     country_code: Optional[str]
+#     status: UsersStatusEnum
+#
+# class RegisterRequest(BaseModel):
+#     username: Optional[str] = Field(None, description="用户名")
+#     email: Optional[EmailStr] = Field(None, description="邮箱地址")
+#     phone_number: Optional[str] = Field(None, description="手机号码")
+#     country_code: Optional[str] = Field(None, description="国际区号")
+#     password: str
+#
+#
+class UpdateUserSchema(BaseModel):
     username: Optional[str] = Field(None, min_length=6, max_length=50)
     email: Optional[EmailStr] = None
     phone_number: Optional[str] = Field(None, min_length=1, max_length=20)
@@ -49,18 +60,18 @@ class UpdateUserProfileModel(BaseModel):
     province: Optional[str] = Field(None, max_length=100)
     city: Optional[str] = Field(None, max_length=100)
     birth_date: Optional[datetime.date] = None,
-    bio: Optional[str] = Field(None,max_length=255)
+    bio: Optional[str] = Field(None, max_length=255)
     custom_status: Optional[str] = Field(None, max_length=255)
-
-
-class PasswordUpdateRequest(BaseModel):
-    old_password: str = Field(..., description="The current password of the user")
-    new_password: str = Field(..., min_length=8, description="The new password for the user")
-
-    @field_validator('new_password')
-    def password_strength(cls, value: str):
-        # 示例: 确保密码长度至少为6
-        if len(value) < 6:
-            raise ValueError('Password must be at least 6 characters long')
-        # 可以添加更多的密码强度验证逻辑
-        return value
+#
+#
+# class PasswordUpdateRequest(BaseModel):
+#     old_password: str = Field(..., description="The current password of the user")
+#     new_password: str = Field(..., min_length=8, description="The new password for the user")
+#
+#     @field_validator('new_password')
+#     def password_strength(cls, value: str):
+#         # 示例: 确保密码长度至少为6
+#         if len(value) < 6:
+#             raise ValueError('Password must be at least 6 characters long')
+#         # 可以添加更多的密码强度验证逻辑
+#         return value

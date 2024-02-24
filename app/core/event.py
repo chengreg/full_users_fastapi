@@ -8,7 +8,7 @@
 
 from typing import Callable
 from fastapi import FastAPI
-from .mysql_db import init_db
+# from .mysql_db import init_db
 from app.models.user import User, UserProfile
 from app.models.secret_key import SecretKey
 
@@ -16,7 +16,7 @@ from app.models.secret_key import SecretKey
 def startup(app: FastAPI) -> Callable:
     async def app_startup() -> None:
         print("项目启动...")
-        init_db()
+        # init_db()
 
     return app_startup
 

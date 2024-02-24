@@ -2,25 +2,29 @@
 # -*- coding: UTF-8 -*-
 """
 @Author  ：Chen GangQiang
-@Date    ：2024/2/23 02:05 
+@Date    ：2024/2/25 02:37 
 @Desc    ：
 """
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import PyJWTError
 import jwt
-from sqlmodel import Session
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from .mysql_db import get_db
-from .config import settings
-from ..crud.user import get_user_by_username
-from app.core.redis_db import get_redis_pool
+from app.core.config import settings
+from app.db.redis_db import get_redis_pool
+from app.crud.user.user import UserCRUD
+from app.db.postgresql_db import engine
+from app.models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
 
+# 创建异步session
+session = async_sessionmaker(bind=engine, expire_on_commit=False)
+db = UserCRUD(User)
 
-async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -38,7 +42,7 @@ async def get_current_user(db: Session = Depends(get_db), token: str = Depends(o
         if username is None:
             raise credentials_exception
 
-        user = get_user_by_username(db, username)
+        user = await db.get_by_username(session, username)
         if not user:
             raise credentials_exception
     except PyJWTError:

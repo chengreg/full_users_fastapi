@@ -9,12 +9,10 @@ from datetime import datetime, timedelta
 from typing import Optional
 import jwt
 from fastapi import Depends
-from app.core.config import settings
-from app.core.redis_db import get_redis_pool
-# from passlib.context import CryptContext
-from app.core.deps import oauth2_scheme
 
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from app.api.deps import oauth2_scheme
+from app.core.config import settings
+from app.db.redis_db import get_redis_pool
 
 
 async def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

@@ -15,7 +15,11 @@ from .core.config import settings
 
 
 def create_app():
-    app = FastAPI(title=settings.PROJECT_NAME, version=settings.PROJECT_VERSION, description=settings.PROJECT_DESC)
+    app = FastAPI(
+        title=settings.PROJECT_NAME,
+        version=settings.PROJECT_VERSION,
+        docs_url="/",
+        description=settings.PROJECT_DESC)
 
     # 注册事件
     app.add_event_handler("startup", startup(app))

@@ -24,7 +24,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # 数据库配置
-    MYSQL_URL: str
+    POSTGRES_URL: str
+    POSTGRES_URL_SYNC: str
     REDIS_URL: str
 
     APP_ENV: str = "development"
