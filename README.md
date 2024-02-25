@@ -7,3 +7,9 @@ docker-compose up -d
 ```shell
 alembic upgrade head
 ```
+
+
+## 配置https
+```shell
+uvicorn main:app --host 0.0.0.0 --port 443 --ssl-keyfile=/path/to/your/keyfile.pem --ssl-certfile=/path/to/your/certfile.pem
+```
