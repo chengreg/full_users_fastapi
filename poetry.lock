@@ -1651,6 +1651,20 @@ typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart (>=0.0.7)", "pyyaml"]
 
 [[package]]
+name = "tencentcloud-sdk-python"
+version = "3.0.1094"
+description = "Tencent Cloud SDK for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "tencentcloud-sdk-python-3.0.1094.tar.gz", hash = "sha256:acd4b71eb09ca3255aeb6d5367d67807ba6da24e9911fdab156ef509a1535000"},
+    {file = "tencentcloud_sdk_python-3.0.1094-py2.py3-none-any.whl", hash = "sha256:a2ebe01c24dd9e807b6f3913d16dac073ca5631cf6bb7c8200c7dd29006b794d"},
+]
+
+[package.dependencies]
+requests = ">=2.16.0"
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -2004,4 +2018,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "9c1c7e5f885aeed88f8c1a3d7e38c820c20ffa11556a770c0ee1110706eadec5"
+content-hash = "6328f771e08afc68f45581310d02d39bcc1212d87df9e57466c0446867d9b9d6"

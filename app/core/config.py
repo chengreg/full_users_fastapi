@@ -28,6 +28,15 @@ class Settings(BaseSettings):
     POSTGRES_URL_SYNC: str
     REDIS_URL: str
 
+    # tencent cloud sms
+    TENCENT_SMS_SECRETID: str
+    TENCENT_SMS_SECRETKEY: str
+    TENCENT_SMS_SDKAPPID: str
+    TENCENT_SMS_SIGN: str
+    TENCENT_SMS_TEMPLATE_ID: str
+    TENCENT_SMS_EXPIRE: str
+    TENCENT_SMS_REGION:str
+
     APP_ENV: str = "development"
 
     class Config:

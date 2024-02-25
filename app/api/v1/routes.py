@@ -8,6 +8,7 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints.user.user import user_router
 from app.api.v1.endpoints.system.system import system_router
+from app.api.v1.extends.sms import sms_router
 
 # from .secret_key import secret_key_router
 
@@ -17,5 +18,6 @@ v1_router = APIRouter(prefix="/v1")
 # 注册到v1_router中
 v1_router.include_router(user_router)
 v1_router.include_router(system_router)
+v1_router.include_router(sms_router)
 
 # v1_router.include_router(secret_key_router)
