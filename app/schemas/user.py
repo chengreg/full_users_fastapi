@@ -12,12 +12,23 @@ from ..models.user import UsersStatusEnum, GenderEnum
 import datetime
 
 
-class UserCreateSchema(BaseModel):
-    username: Optional[str] = Field(None, min_length=6, max_length=50, description="用户名")
+class UserCreateByEmailSchema(BaseModel):
     email: Optional[EmailStr] = Field(None, description="电子邮件")
-    phone_number: Optional[str] = Field(None, min_length=1, max_length=20, description="手机号码")
-    country_code: Optional[str] = Field(None, min_length=1, max_length=4, description="国际区号")
-    password: Optional[str] = Field(None, min_length=6, max_length=20, description="密码")
+    password: Optional[str] = Field(None, min_length=6, max_length=20, description="密码", example="yourpassword")
+
+
+class UserCreateByPhoneSchema(BaseModel):
+    country_code: Optional[str] = Field(None, min_length=1, max_length=4, description="国际区号", example="+86")
+    phone_number: Optional[str] = Field(None, min_length=1, max_length=20, description="手机号码", example="13800000000")
+    password: Optional[str] = Field(None, min_length=6, max_length=20, description="密码", example="yourpassword")
+    # 验证码
+    sms_code: Optional[str] = Field(None, min_length=6, max_length=6, description="验证码", example="123456")
+
+
+class TokenResponseSchema(BaseModel):
+    access_token: str
+    token_type: str
+    expires_in: float
 
 
 #

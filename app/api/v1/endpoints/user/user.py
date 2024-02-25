@@ -16,10 +16,12 @@ from app.core.config import settings
 from app.models.user import User
 from app.crud.user.user import UserCRUD
 from app.db.postgresql_db import engine
-from app.schemas.user import UserCreateSchema, UpdateUserSchema
+from app.schemas.user import UpdateUserSchema, UserCreateByEmailSchema, UserCreateByPhoneSchema, TokenResponseSchema
 from app.crud.auth import create_access_token
 from app.core.security import get_password_hash
 from app.api.deps import get_current_user
+from app.schemas.form_models import OAuth2PasswordRequestFormEmail, OAuth2PasswordRequestFormPhone
+from app.services.authentication_service import generate_token_response
 
 # 创建user路由
 user_router = APIRouter(prefix="/user", tags=["用户管理"])
@@ -29,57 +31,58 @@ async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
 db = UserCRUD(User)
 
 
-@user_router.post("/register", status_code=status.HTTP_201_CREATED, summary="用户注册")
-async def register(userIn: UserCreateSchema):
-    if userIn.username:
-        """处理用户名注册逻辑"""
-        # 判断用户名是否已存在
-        if await db.get_by_username(async_session, userIn.username):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")
-
-    elif userIn.email:
-        """处理邮箱注册逻辑"""
-        if await db.get_by_email(async_session, userIn.email):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
-
-    elif userIn.phone_number and userIn.country_code:
+@user_router.post("/register_by_phone", response_model=TokenResponseSchema, status_code=status.HTTP_201_CREATED,
+                  summary="手机号注册")
+async def register_by_phone(userIn: UserCreateByPhoneSchema):
+    if userIn.phone_number and userIn.country_code:
         """处理手机号码注册逻辑"""
         if await db.get_by_phone_number(async_session, userIn.phone_number, userIn.country_code):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Phone number already exists")
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
 
+    # 验证手机验证码
+    # if not await verify_sms_code(userIn.phone_number, userIn.sms_code):
+    #     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid code")
+
     # 创建用户
     new_user = User(
         id=str(uuid4()),
-        username=userIn.username,
-        email=userIn.email,
         phone_number=userIn.phone_number,
         country_code=userIn.country_code,
         hashed_password=get_password_hash(userIn.password)
     )
     user = await db.create_user(async_session, new_user)
 
-    # 创建jwt token
-    # 生成access token
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = await create_access_token(
-        data={"sub": user.username},  # 使用用户名作为subject
-        expires_delta=access_token_expires
+    return await generate_token_response(user.country_code+"_"+user.phone_number)
+
+
+@user_router.post("/register_by_email", response_model=TokenResponseSchema, status_code=status.HTTP_201_CREATED,
+                  summary="邮箱地址注册")
+async def register_by_email(userIn: UserCreateByEmailSchema):
+    """邮箱注册"""
+    # 验证邮箱是否存在
+    if userIn.email:
+        if await db.get_by_email(async_session, userIn.email):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
+
+    # 创建用户
+    new_user = User(
+        id=str(uuid4()),
+        email=userIn.email,
+        hashed_password=get_password_hash(userIn.password)
     )
+    user = await db.create_user(async_session, new_user)
 
-    # 返回token和其他信息
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "expires_in": access_token_expires.total_seconds(),
-    }
+    return await generate_token_response(user.email)
 
 
-@user_router.post("/login", summary="用户登录")
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+@user_router.post("/login_by_email", response_model=TokenResponseSchema, summary="邮箱地址登录")
+async def login_by_email(form_data: OAuth2PasswordRequestFormEmail = Depends()):
     # 尝试使用用户名、邮箱或手机号码登录
-    user = await db.authenticate_user(async_session, form_data.username, form_data.password)
+    user = await db.authenticate_user_by_email(async_session, form_data.email, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -87,19 +90,21 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # 生成access token
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = await create_access_token(
-        data={"sub": user.username},  # 使用用户名作为subject
-        expires_delta=access_token_expires
-    )
+    return await generate_token_response(user.email)
 
-    # 返回token和其他信息
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "expires_in": access_token_expires.total_seconds(),
-    }
+
+@user_router.post("/login_by_phone", response_model=TokenResponseSchema, summary="手机号登录")
+async def login_by_phone(form_data: OAuth2PasswordRequestFormPhone = Depends()):
+    """ 手机号码登录 """
+    # check user
+    user = await db.authenticate_user_by_phone_number(async_session, form_data.phone_number, form_data.country_code,form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return await generate_token_response(user.country_code+"_"+user.phone_number)
 
 
 @user_router.get("/me", summary="获取当前用户信息")
@@ -135,7 +140,6 @@ async def update_user_profile_route(
         raise e
 
     return {"message": "User and profile updated successfully."}
-
 
 # @user_router.patch("/profile", summary="更新用户信息")
 # async def update_user_profile_route(
