@@ -11,7 +11,7 @@ from sqlmodel import Field
 from sqlalchemy.dialects.postgresql import JSON
 
 
-class SystemParams(Base):
+class SystemParams(Base, table=True):
     __tablename__ = "system_params"
 
     params_name: str = Field(unique=True, max_length=255, description="参数名称")
