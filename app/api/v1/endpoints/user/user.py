@@ -16,12 +16,13 @@ from app.core.config import settings
 from app.models.user import User
 from app.crud.user.user import UserCRUD
 from app.db.postgresql_db import engine
-from app.schemas.user import UpdateUserSchema, UserCreateByEmailSchema, UserCreateByPhoneSchema, TokenResponseSchema
+from app.schemas.user import UpdateUserSchema, UserCreateByEmailSchema, UserCreateByPhoneSchema, TokenResponseSchema, \
+    UserCreateByUsernameSchema
 from app.crud.auth import create_access_token
 from app.core.security import get_password_hash
 from app.api.deps import get_current_user
 from app.schemas.form_models import OAuth2PasswordRequestFormEmail, OAuth2PasswordRequestFormPhone
-from app.services.authentication_service import generate_token_response
+from app.services.authentication_service import generate_token_response, check_token_exists_in_redis, delete_token_from_redis
 
 # 创建user路由
 user_router = APIRouter(prefix="/user", tags=["用户管理"])
@@ -78,6 +79,25 @@ async def register_by_email(userIn: UserCreateByEmailSchema):
 
     return await generate_token_response(user.email)
 
+@user_router.post("/register_by_username", response_model=TokenResponseSchema, status_code=status.HTTP_201_CREATED,
+                  summary="用户名注册")
+async def register_by_username(userIn: UserCreateByUsernameSchema):
+    """用户名注册 """
+    if userIn.username:
+        if await db.get_by_username(async_session, userIn.username):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="username already exists")
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
+
+    # 创建用户
+    new_user = User(
+        id=str(uuid4()),
+        username=userIn.username,
+        hashed_password=get_password_hash(userIn.password)
+    )
+    user = await db.create_user(async_session, new_user)
+
+    return await generate_token_response(user.username)
 
 @user_router.post("/login_by_email", response_model=TokenResponseSchema, summary="邮箱地址登录")
 async def login_by_email(form_data: OAuth2PasswordRequestFormEmail = Depends()):
@@ -105,6 +125,21 @@ async def login_by_phone(form_data: OAuth2PasswordRequestFormPhone = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
     return await generate_token_response(user.country_code+"_"+user.phone_number)
+
+
+@user_router.post("/login_by_username", response_model=TokenResponseSchema, summary="用户名登录")
+async def login_by_username(form_data: OAuth2PasswordRequestForm = Depends()):
+    """ 手机号码登录 """
+    # check user
+    user = await db.authenticate_user_by_username(async_session, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return await generate_token_response(user.username)
+
 
 
 @user_router.get("/me", summary="获取当前用户信息")
@@ -140,6 +175,30 @@ async def update_user_profile_route(
         raise e
 
     return {"message": "User and profile updated successfully."}
+
+
+@user_router.delete("/logout", summary="注销用户")
+async def logout(current_user: User = Depends(get_current_user)):
+    user_identifier = (
+            current_user.username or
+            current_user.email or
+            (
+                f"{current_user.country_code}_{current_user.phone_number}" if current_user.country_code and current_user.phone_number else None)
+    )
+
+    if await check_token_exists_in_redis(user_identifier):
+        # 如果令牌存在，则进行登出并从Redis中删除该令牌
+        await delete_token_from_redis(user_identifier)
+        return {"message": "Logged out successfully."}
+    else:
+        # 如果token不存在，则返回401 Unauthorized 状态码
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
+
+
+
 
 # @user_router.patch("/profile", summary="更新用户信息")
 # async def update_user_profile_route(

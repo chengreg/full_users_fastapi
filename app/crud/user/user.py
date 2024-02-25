@@ -33,7 +33,7 @@ class UserCRUD(BaseCRUD[User]):
 
     async def get_by_phone_number(self, async_session: async_sessionmaker[AsyncSession], phone_number: str,
                                   country_code: str) -> Optional[User]:
-        """ 通过手机号码获取用户信息 """
+        """ 通过手机号码和国际区号获取用户信息 """
         async with async_session() as session:
             statement = select(self.model).where(self.model.phone_number == phone_number,
                                                  self.model.country_code == country_code)
@@ -63,25 +63,9 @@ class UserCRUD(BaseCRUD[User]):
             await session.refresh(user)
             return user
 
-    # async def authenticate_user(self, async_session: async_sessionmaker[AsyncSession], username: str, password: str) -> \
-    # Optional[User]:
-    #     """ 用户登录认证 """
-    #     user = None
-    #     if not user:
-    #         user = await self.get_by_username(async_session, username)
-    #     if not user:
-    #         user = await self.get_by_email(async_session, username)
-    #     if not user and '@' not in username and len(username.split('-')) == 2:
-    #         country_code, phone_number = username.split('-')
-    #         user = await self.get_by_phone_number(async_session, phone_number, country_code)
-    #
-    #     if user and verify_password(password, user.hashed_password):
-    #         return user
-    #     return None
-
     async def authenticate_user_by_email(self, async_session: async_sessionmaker[AsyncSession], email: str,
                                          password: str) -> Optional[User]:
-        """ 用户登录认证 """
+        """ 通过电子邮件登录认证 """
         user = await self.get_by_email(async_session, email)
         if user and verify_password(password, user.hashed_password):
             return user
@@ -89,15 +73,22 @@ class UserCRUD(BaseCRUD[User]):
 
     async def authenticate_user_by_phone_number(self, async_session: async_sessionmaker[AsyncSession], phone_number: str,
                                                 country_code: str, password: str) -> Optional[User]:
-        """ 用户登录认证 """
+        """ 通过手机号码和国际区号登录认证 """
         user = await self.get_by_phone_number(async_session, phone_number, country_code)
+        if user and verify_password(password, user.hashed_password):
+            return user
+        return None
+
+    async def authenticate_user_by_username(self, async_session: async_sessionmaker[AsyncSession], username: str, password: str) -> Optional[User]:
+        """ 通过用户名登录认证 """
+        user = await self.get_by_username(async_session, username)
         if user and verify_password(password, user.hashed_password):
             return user
         return None
 
     async def update_user(self, async_session: async_sessionmaker[AsyncSession], user_id: str,
                           update_user: dict) -> User:
-        """ 更新用户信息 """
+        """ 更新用户表的信息 """
         async with async_session() as session:
             statement = select(User).filter(User.id == user_id)
             result = await session.execute(statement)
@@ -109,7 +100,7 @@ class UserCRUD(BaseCRUD[User]):
 
     async def update_user_profile(self, async_session: async_sessionmaker[AsyncSession], user_id: str,
                                   profile_update: dict):
-        """ 更新用户资料 """
+        """ 更新用户资料表的信息 """
         async with async_session() as session:
             statement = select(UserProfile).filter(UserProfile.user_id == user_id)
             result = await session.execute(statement)

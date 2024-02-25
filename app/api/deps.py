@@ -17,7 +17,7 @@ from app.crud.user.user import UserCRUD
 from app.db.postgresql_db import engine
 from app.models.user import User
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/user/login_by_username")
 
 # 创建异步session
 session = async_sessionmaker(bind=engine, expire_on_commit=False)
