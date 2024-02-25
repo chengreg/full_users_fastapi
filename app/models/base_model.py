@@ -9,8 +9,6 @@
 from datetime import datetime, timezone
 from typing import Optional
 from sqlmodel import SQLModel, Field
-from sqlalchemy import Column
-from sqlalchemy.types import DateTime
 import uuid
 
 

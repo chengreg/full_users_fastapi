@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from sqlmodel import SQLModel
 
 from app.models.user import *
+from app.models.system.system_params import SystemParams
 
 # 加载环境变量配置
 def load_env_config():

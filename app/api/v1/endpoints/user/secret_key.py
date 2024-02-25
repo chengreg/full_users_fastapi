@@ -12,7 +12,7 @@ from fastapi.encoders import jsonable_encoder
 
 from app.core.deps import get_current_user
 from app.core.mysql_db import get_db
-from app.crud.secret_key import create_secret_key, get_user_secret_keys
+from app.crud.user.secret_key import create_secret_key, get_user_secret_keys
 from app.models.secret_key import SecretKey
 from app.models.user import User
 from app.schemas.secret_key import SecretKeyCreate

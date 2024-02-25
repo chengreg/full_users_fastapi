@@ -8,7 +8,7 @@
 from typing import List
 
 from sqlalchemy.orm import Session
-from ..models.secret_key import SecretKey
+from app.models.secret_key import SecretKey
 from app.core.utils import generate_secret_key
 
 
